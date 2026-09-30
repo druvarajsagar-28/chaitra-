@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroBus | Premium Bus Booking Experience</title>
+    <meta name="description" content="Experience premium bus travel booking with real-time seat mapping, instant checkouts, and a sleek booking dashboard.">
+    
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Lucide Icons Library -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="container header-container">
+            <a href="#" class="logo" id="logo-btn">
+                <i data-lucide="compass"></i>
+                AeroBus
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li>
+                        <a href="#" class="nav-link active" id="nav-book">
+                            <i data-lucide="search"></i> Search Routes
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link my-bookings-btn" id="nav-bookings">
+                            <i data-lucide="ticket"></i> My Bookings
+                            <span class="badge" id="bookings-count">0</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main View Area -->
+    <main class="container">
+        
+        <!-- ================= SEARCH & BOOK VIEW ================= -->
+        <section id="search-view" class="view-section active">
+            <!-- Hero Header -->
+            <div class="hero-section">
+                <h1 class="hero-title">Travel in Comfort, Book with Ease</h1>
+                <p class="hero-subtitle">Discover premium routes, select your favorite seat, and get ready for a seamless journey.</p>
+            </div>
+
+            <!-- Search Panel Card -->
+            <div class="glass-card search-box-wrapper">
+                <form class="search-form" id="search-form" onsubmit="event.preventDefault();">
+                    <!-- Source Field -->
+                    <div class="input-group">
+                        <label class="input-label" for="source-input">
+                            <i data-lucide="map-pin"></i> Boarding From
+                        </label>
+                        <div class="input-field-wrapper">
+                            <input type="text" id="source-input" class="input-field" placeholder="Enter departure city" autocomplete="off" required>
+                            <i data-lucide="map-pin" class="input-icon"></i>
+                            <ul id="source-suggestions" class="autocomplete-list"></ul>
+                        </div>
+                        <button type="button" class="swap-btn" id="swap-cities" title="Swap Cities">
+                            <i data-lucide="arrow-left-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- Destination Field -->
+                    <div class="input-group">
+                        <label class="input-label" for="dest-input">
+                            <i data-lucide="navigation"></i> Dropping To
+                        </label>
+                        <div class="input-field-wrapper">
+                            <input type="text" id="dest-input" class="input-field" placeholder="Enter destination city" autocomplete="off" required>
+                            <i data-lucide="navigation" class="input-icon"></i>
+                            <ul id="dest-suggestions" class="autocomplete-list"></ul>
+                        </div>
+                    </div>
+
+                    <!-- Date Picker -->
+                    <div class="input-group">
+                        <label class="input-label" for="date-input">
+                            <i data-lucide="calendar"></i> Departure Date
+                        </label>
+                        <div class="input-field-wrapper">
+                            <input type="date" id="date-input" class="input-field" required>
+                            <i data-lucide="calendar" class="input-icon"></i>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="search-btn-wrapper">
+                        <button type="submit" class="btn-primary" id="search-btn">
+                            <i data-lucide="search"></i> Find Buses
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Split Booking Section: Filters and Results (Hidden until search is triggered) -->
+            <div id="booking-container" class="booking-view-container hidden">
+                <!-- Filters Sidebar -->
+                <aside class="glass-card filters-sidebar">
+                    <div class="filter-section">
+                        <div class="filter-title">
+                            <span>FILTERS</span>
+                            <button class="clear-filters-btn" id="clear-filters">Clear All</button>
+                        </div>
+                    </div>
+
+                    <!-- Bus Type filter -->
+                    <div class="filter-section">
+                        <h4 class="filter-title">Bus Class</h4>
+                        <div class="type-selector">
+                            <input type="checkbox" id="class-ac" class="pill-checkbox filter-checkbox" value="AC">
+                            <label for="class-ac" class="pill-label">AC</label>
+                            
+                            <input type="checkbox" id="class-nonac" class="pill-checkbox filter-checkbox" value="Non-AC">
+                            <label for="class-nonac" class="pill-label">Non-AC</label>
+                        </div>
+                    </div>
+
+                    <!-- Departure Time filter -->
+                    <div class="filter-section">
+                        <h4 class="filter-title">Departure Time</h4>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="checkbox-input filter-time" value="morning">
+                                <span>Morning (6 AM - 12 PM)</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="checkbox-input filter-time" value="afternoon">
+                                <span>Afternoon (12 PM - 6 PM)</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="checkbox-input filter-time" value="evening">
+                                <span>Evening (6 PM - 12 AM)</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="checkbox-input filter-time" value="night">
+                                <span>Night (12 AM - 6 AM)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Price Slider -->
+                    <div class="filter-section">
+                        <h4 class="filter-title">Max Ticket Price</h4>
+                        <div class="price-slider-group">
+                            <div class="price-range-info">
+                                <span>Min: ₹400</span>
+                                <span id="max-price-label">Max: ₹2000</span>
+                            </div>
+                            <input type="range" id="price-range-slider" class="price-slider" min="400" max="2500" step="50" value="2500">
+                        </div>
+                    </div>
+
+                    <!-- Amenities filter -->
+                    <div class="filter-section">
+                        <h4 class="filter-title">Amenities</h4>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="checkbox-input filter-amenity" value="WiFi">
+                                <span>Wi-Fi</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="checkbox-input filter-amenity" value="Water">
+                                <span>Water Bottle</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="checkbox-input filter-amenity" value="Blanket">
+                                <span>Blanket / Pillow</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="checkbox-input filter-amenity" value="Charging">
+                                <span>Charging Point</span>
+                            </label>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Listing Column -->
+                <section>
+                    <!-- Listing Header: Results count and sorting -->
+                    <div class="results-header">
+                        <div class="results-count">
+                            Available Buses: <span id="buses-count-label">0</span>
+                        </div>
+                        <div class="sort-group">
+                            <label for="sort-select" class="sort-label">Sort By:</label>
+                            <select id="sort-select" class="sort-select">
+                                <option value="cheapest">Price: Low to High</option>
+                                <option value="expensive">Price: High to Low</option>
+                                <option value="earliest">Departure: Earliest</option>
+                                <option value="latest">Departure: Latest</option>
+                                <option value="rating">Top Rated</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Buses Container -->
+                    <div id="buses-list" class="buses-list">
+                        <!-- Bus Cards will be rendered dynamically by JavaScript -->
+                    </div>
+                </section>
+            </div>
+        </section>
+
+
+        <!-- ================= BOOKINGS HISTORY VIEW ================= -->
+        <section id="bookings-view" class="view-section">
+            <div class="bookings-history-section">
+                <h2>Booking Dashboard</h2>
+                
+                <!-- Ticket Printing / High-fidelity display Area (for printed tickets) -->
+                <div id="ticket-print-area" class="ticket-view-wrapper hidden">
+                    <div class="ticket-actions">
+                        <button class="btn-secondary" id="ticket-back-btn">
+                            <i data-lucide="arrow-left"></i> Back to Dashboard
+                        </button>
+                        <button class="btn-primary" id="ticket-print-btn">
+                            <i data-lucide="printer"></i> Print Ticket
+                        </button>
+                    </div>
+                    <div id="ticket-details-card" class="ticket-outer">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- History list -->
+                <div id="bookings-history-list" class="booking-history-list">
+                    <!-- History Cards will be rendered dynamically by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+
+    <!-- ================= PAYMENT MODAL ================= -->
+    <div id="payment-modal" class="modal-overlay">
+        <div class="glass-card modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title" id="payment-modal-title">Secure Ticket Booking</h3>
+                <button class="modal-close" id="close-payment-modal">&times;</button>
+            </div>
+            
+            <div class="modal-body" id="payment-modal-body">
+                <!-- Standard checkout details -->
+                <div id="payment-form-content">
+                    <div class="payment-tabs">
+                        <div class="payment-tab active" id="tab-card" data-target="panel-card">
+                            <i data-lucide="credit-card"></i> Card Payment
+                        </div>
+                        <div class="payment-tab" id="tab-upi" data-target="panel-upi">
+                            <i data-lucide="smartphone"></i> UPI / QR Code
+                        </div>
+                    </div>
+
+                    <!-- Panel Card Payment -->
+                    <div id="panel-card" class="payment-panel active">
+                        <div class="credit-card-ui">
+                            <div class="card-chip"></div>
+                            <div class="card-num-display" id="cc-num-display">•••• •••• •••• ••••</div>
+                            <div class="card-meta-row">
+                                <div>
+                                    <div style="font-size: 8px; opacity: 0.6;">CARD HOLDER</div>
+                                    <div id="cc-name-display">YOUR NAME</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 8px; opacity: 0.6;">EXPIRES</div>
+                                    <div id="cc-expiry-display">MM/YY</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <form class="card-form" id="cc-payment-form" onsubmit="event.preventDefault();">
+                            <div class="input-group">
+                                <label class="input-label" for="cc-number">Card Number</label>
+                                <div class="input-field-wrapper">
+                                    <input type="text" id="cc-number" class="input-field" placeholder="1234 5678 1234 5678" maxlength="19" required>
+                                    <i data-lucide="credit-card" class="input-icon"></i>
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div class="input-group">
+                                    <label class="input-label" for="cc-expiry">Expiration</label>
+                                    <div class="input-field-wrapper">
+                                        <input type="text" id="cc-expiry" class="input-field" placeholder="MM/YY" maxlength="5" required>
+                                        <i data-lucide="calendar" class="input-icon"></i>
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <label class="input-label" for="cc-cvv">CVV</label>
+                                    <div class="input-field-wrapper">
+                                        <input type="password" id="cc-cvv" class="input-field" placeholder="•••" maxlength="3" required>
+                                        <i data-lucide="shield-check" class="input-icon"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label" for="cc-name">Cardholder Name</label>
+                                <div class="input-field-wrapper">
+                                    <input type="text" id="cc-name" class="input-field" placeholder="Full Name" required>
+                                    <i data-lucide="user" class="input-icon"></i>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-primary checkout-btn" id="pay-card-btn">
+                                <i data-lucide="lock"></i> Pay Securely <span id="card-total-amount">₹0</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Panel UPI Payment -->
+                    <div id="panel-upi" class="payment-panel">
+                        <div class="upi-form">
+                            <div class="qr-placeholder">
+                                <!-- Standard mock QR code using inline SVG -->
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke="#000" stroke-width="2" fill="none">
+                                    <!-- QR Boundaries -->
+                                    <rect x="5" y="5" width="25" height="25" fill="#000"/>
+                                    <rect x="10" y="10" width="15" height="15" fill="#fff"/>
+                                    <rect x="12" y="12" width="11" height="11" fill="#000"/>
+                                    
+                                    <rect x="70" y="5" width="25" height="25" fill="#000"/>
+                                    <rect x="75" y="10" width="15" height="15" fill="#fff"/>
+                                    <rect x="77" y="12" width="11" height="11" fill="#000"/>
+                                    
+                                    <rect x="5" y="70" width="25" height="25" fill="#000"/>
+                                    <rect x="10" y="75" width="15" height="15" fill="#fff"/>
+                                    <rect x="12" y="77" width="11" height="11" fill="#000"/>
+                                    
+                                    <!-- QR Noise points -->
+                                    <path d="M 40,10 H 50 V 20 H 45 V 30 H 40 Z M 40,40 H 45 V 45 H 40 Z M 55,5 H 65 V 15 H 60 V 20 H 55 Z M 50,50 H 60 V 60 H 50 Z" fill="#000"/>
+                                    <path d="M 70,40 H 80 V 50 H 75 V 60 H 70 Z M 85,70 H 95 V 80 H 90 V 90 H 85 Z M 40,75 H 50 V 85 H 45 V 95 H 40 Z" fill="#000"/>
+                                    <path d="M 60,75 H 70 V 80 H 65 V 95 H 60 Z M 80,85 H 90 V 95 H 85 V 90 H 80 Z M 50,65 H 55 V 70 H 50 Z" fill="#000"/>
+                                </svg>
+                            </div>
+                            <p style="font-size: 13px; color: var(--text-muted);">Scan this QR code with any UPI app to complete booking</p>
+                            
+                            <div class="upi-or-text">OR ENTER VPA</div>
+
+                            <form id="upi-vpa-form" onsubmit="event.preventDefault();" style="display:flex; flex-direction:column; gap:16px;">
+                                <div class="input-group">
+                                    <div class="input-field-wrapper">
+                                        <input type="text" id="upi-vpa" class="input-field" placeholder="username@upi" required>
+                                        <i data-lucide="smartphone" class="input-icon"></i>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn-primary checkout-btn" id="pay-upi-btn">
+                                    <i data-lucide="arrow-right-circle"></i> Verify & Pay <span id="upi-total-amount">₹0</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Processing view -->
+                <div id="payment-status-processing" class="payment-processing hidden">
+                    <div class="spinner"></div>
+                    <h4>Processing Secure Payment</h4>
+                    <p style="color: var(--text-muted); font-size: 13px; margin-top: 8px;">Please do not close this window or refresh the page.</p>
+                </div>
+
+                <!-- Success confirmation view -->
+                <div id="payment-status-success" class="payment-processing hidden">
+                    <div class="success-icon-wrap">
+                        <i data-lucide="check"></i>
+                    </div>
+                    <h4 style="color: var(--success); font-size: 22px; font-weight: 800; font-family: var(--font-heading);">Booking Confirmed!</h4>
+                    <p style="color: var(--text-muted); font-size: 14px; margin-top: 8px; margin-bottom: 24px;">Your seats have been booked successfully. A ticket has been generated.</p>
+                    <button class="btn-primary" id="view-ticket-btn" style="margin: 0 auto;">
+                        <i data-lucide="ticket"></i> View Ticket
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Canvas for Confetti animation -->
+    <canvas id="confetti" class="confetti-canvas"></canvas>
+
+    <!-- Custom Logic Script -->
+    <script src="app.js"></script>
+</body>
+</html>
